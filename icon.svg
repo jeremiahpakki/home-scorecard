@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#EFEFE9"/>
+  <!-- Left Charcoal Split-Flap Tile -->
+  <rect x="79" y="111" width="164" height="237" rx="12" fill="#2E3736"/>
+  <rect x="79" y="253" width="164" height="6" fill="#EFEFE9"/>
+  <!-- Right Concrete-Gray Split-Flap Tile -->
+  <rect x="269" y="111" width="164" height="301" rx="12" fill="#AEB0B0"/>
+  <rect x="269" y="253" width="164" height="6" fill="#EFEFE9"/>
+  <!-- Subtle Horizontal Cricket Bat (International Orange) -->
+  <path d="M 82,388 L 115,388 L 124,376 L 234,376 Q 243,376 243,385 L 243,402 Q 243,411 234,411 L 124,411 L 115,399 L 82,399 Q 79,399 79,396 L 79,391 Q 79,388 82,388 Z" fill="#F36307"/>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "name": "Home Scorecard \u2014 Multi-Sport Broadcast Scoreboard",
+  "short_name": "Home Scorecard",
+  "description": "Multi-sport digital scoreboard and broadcast analytics for Cricket, Badminton, Tennis, Table Tennis, and Card Games.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EFEFE9",
+  "theme_color": "#EFEFE9",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
