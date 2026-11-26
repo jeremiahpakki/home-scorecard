@@ -532,35 +532,31 @@ html[data-theme="retro90s"] #top-app-header::after {
 body.audience-mode .scorer-only {
   display: none !important;
 }
+body.audience-locked #mode-switch-btn,
+body.audience-locked #sidebar-cricket-setup,
+body.audience-locked #quick-tools-fab-wrap {
+  display: none !important;
+}
+#audience-live-room-badge {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+body.audience-locked #audience-live-room-badge {
+  display: inline-flex;
+}
 body:not(.audience-mode) .audience-only {
   display: none !important;
 }
 
-/* Stadium HDMI Jumbotron Zero-Control Mode */
-body.stadium-hdmi-mode #top-app-header,
-body.stadium-hdmi-mode #quick-tools-fab-wrap,
-body.stadium-hdmi-mode .scorer-only {
-  display: none !important;
-}
-body.stadium-hdmi-mode #app-main {
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-}
-#stadium-exit-pill {
-  display: none;
-  position: fixed;
-  top: 10px;
-  right: 14px;
-  z-index: 80;
-  opacity: 0.25;
-  transition: opacity 0.2s ease;
-}
-#stadium-exit-pill:hover {
-  opacity: 1;
-}
-body.stadium-hdmi-mode #stadium-exit-pill {
-  display: inline-flex;
-}
 
 /* Cards & Surfaces */
 .sp-card {
@@ -1156,19 +1152,16 @@ table.sp-table th {
   animation: coinSpin 0.85s ease-out;
 }
 </style>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#EFEFE9">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 
 <!-- NON-BLOCKING TOP-RIGHT TOAST -->
 <div id="sp-toast" role="status" aria-live="polite">Ready</div>
 
-<!-- STADIUM HDMI EXIT PILL (Only visible in zero-control Stadium HDMI Mode) -->
-<button id="stadium-exit-pill" class="btn btn-primary" onclick="toggleStadiumHdmiMode(false)">
-  ✕ Exit Stadium HDMI View (Esc)
-</button>
 
 <!-- TOP HEADER BAR (Clean Single-Row; Game Switcher, Theme, Cast & Cricket Format live in Sidebar) -->
 <header id="top-app-header">
@@ -1183,6 +1176,8 @@ table.sp-table th {
   </div>
 
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+    <!-- Live Locked Audience Sync Badge -->
+    <span id="audience-live-room-badge">🔴 LIVE SYNC</span>
     <!-- Scorer vs Audience Mode Toggle -->
     <button id="mode-switch-btn" class="btn" onclick="toggleAudienceMode()" title="Switch between Scorer Console and Audience View">
       🎛️ <span id="mode-switch-label">Scorer</span>
@@ -1259,10 +1254,7 @@ table.sp-table th {
         📺 Broadcast &amp; Standalone Preview
       </div>
       <button class="btn" style="width:100%;margin-bottom:6px;" onclick="closeSidebar();openModal('cast-modal')">
-        📡 Chromecast &amp; E2EE Room Link / QR
-      </button>
-      <button class="btn" style="width:100%;margin-bottom:6px;" onclick="closeSidebar();toggleStadiumHdmiMode(true)">
-        🏟️ Launch Stadium HDMI View
+        📡 Live Broadcast &amp; WhatsApp Share
       </button>
       <button class="btn btn-secondary" style="width:100%;" onclick="downloadStandaloneApp()">
         💾 Download Standalone .html App
@@ -1926,7 +1918,7 @@ table.sp-table th {
       🆕 Start New Match / Game
     </button>
     <button class="btn" style="justify-content:flex-start;" onclick="openModal('cast-modal');toggleQuickToolsFab(false)">
-      📡 Cast / Encrypted Room Link
+      📡 Live Broadcast &amp; WhatsApp Share
     </button>
     <button class="btn" style="justify-content:flex-start;" onclick="downloadStandaloneApp();toggleQuickToolsFab(false)">
       💾 Export Standalone .html
@@ -2037,44 +2029,71 @@ table.sp-table th {
   </div>
 </div>
 
-<!-- 5. Chromecast, Stadium HDMI & AES-GCM E2EE Broadcast Room Modal -->
+<!-- 5. Live Broadcast Sync (Firebase Realtime DB) & WhatsApp Share Modal -->
 <div id="cast-modal" class="sp-modal-backdrop" onclick="if(event.target===this)closeModal('cast-modal')">
   <div class="sp-modal-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <h3 style="margin:0;font-size:1.1rem;font-weight:800;">📺 Broadcast Cast &amp; AES-256-GCM Encrypted Audience Link</h3>
+      <h3 style="margin:0;font-size:1.08rem;font-weight:800;">📡 Live Broadcast Sync &amp; WhatsApp Share</h3>
       <button class="btn" onclick="closeModal('cast-modal')">✕ Close</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
+      <!-- 2. Live Firebase Room & WhatsApp Share -->
       <div class="sp-card-sub">
-        <div style="font-weight:800;font-size:0.88rem;margin-bottom:4px;">1. Wireless Chromecast / Presentation API Receiver</div>
-        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">
-          Casts a clean, zero-control broadcast scoreboard in the active sport's theme (Light or Dark).
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+          <span style="font-weight:800;font-size:0.86rem;">Live Audience Room Sync (Firebase)</span>
+          <span id="fb-conn-badge" style="font-size:0.72rem;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--bg-elevated);border:1px solid var(--border-col);">⚪ Not Connected</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="startChromecastSession()">📡 Cast to Chromecast / TV</button>
-          <button class="btn btn-secondary" onclick="closeModal('cast-modal');toggleStadiumHdmiMode(true)">🏟️ Full-Screen HDMI Stadium View</button>
-        </div>
-      </div>
 
-      <div class="sp-card-sub">
-        <div style="font-weight:800;font-size:0.88rem;margin-bottom:4px;">2. End-to-End Encrypted (AES-256-GCM) Audience Room Link &amp; QR</div>
-        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">
-          Generates a PBKDF2 + AES-GCM encrypted payload locked to your 6-digit Room PIN so only viewers with your link/QR or PIN can decrypt the live scoreboard.
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;font-weight:800;">Room PIN:</span>
+          <input type="text" id="e2ee-room-pin" value="482910" maxlength="10" style="width:96px;font-family:var(--font-mono);text-align:center;" oninput="refreshBroadcastAudienceLink()" />
+          <button class="btn" style="padding:5px 8px;font-size:0.74rem;" onclick="randomizeRoomPin()">🎲 New PIN</button>
+          <label style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:700;cursor:pointer;">
+            <input type="checkbox" id="fb-encrypt-toggle" checked onchange="toggleFirebaseEncryption(this.checked)" />
+            🔐 AES-256-GCM
+          </label>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
-          <span style="font-size:0.8rem;font-weight:800;">Room PIN:</span>
-          <input type="text" id="e2ee-room-pin" value="482910" maxlength="8" style="width:100px;font-family:var(--font-mono);text-align:center;" />
-          <button class="btn btn-primary" onclick="generateEncryptedBroadcastLink()">🔐 Encrypt &amp; Generate Link</button>
-          <button class="btn" onclick="copyEncryptedBroadcastLink()">📋 Copy Link</button>
+
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+          <label style="font-size:0.74rem;font-weight:800;white-space:nowrap;">Base URL (optional):</label>
+          <input type="text" id="fb-base-url-input" placeholder="Auto-detected (or paste hosted URL)" style="flex:1;min-width:160px;font-size:0.74rem;font-family:var(--font-mono);" oninput="saveBaseUrlOverride(this.value)" />
         </div>
         <input type="text" id="e2ee-link-output" readonly style="width:100%;font-size:0.74rem;font-family:var(--font-mono);margin-bottom:8px;" value="" />
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div id="e2ee-qr-svg-box" style="width:96px;height:96px;background:#ffffff;padding:6px;border-radius:8px;border:1px solid var(--border-col);display:flex;align-items:center;justify-content:center;"></div>
-          <div style="font-size:0.76rem;color:var(--text-muted);">
-            <div><strong>Cipher:</strong> WebCrypto AES-256-GCM (100k PBKDF2 iterations)</div>
-            <div id="e2ee-status-line" style="margin-top:4px;color:var(--accent);font-weight:700;">Ready to encrypt state snapshot.</div>
-          </div>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+          <button id="fb-publish-btn" class="btn btn-primary" style="flex:1;" onclick="toggleFirebaseLivePublish()">🔴 Start Live Sync</button>
+          <button class="btn" style="background:#16a34a;color:#ffffff;border-color:#15803d;flex:1;" onclick="shareLiveLinkOnWhatsApp()">💬 Share Live Link on WhatsApp</button>
+          <button class="btn" onclick="copyEncryptedBroadcastLink()">📋 Copy Link</button>
         </div>
+
+        <div id="e2ee-status-line" style="font-size:0.75rem;color:var(--text-muted);font-weight:700;margin-bottom:8px;">
+          Configure Firebase below to publish live updates to rooms/&lt;PIN&gt;.
+        </div>
+
+        <!-- Collapsible Firebase Config Panel -->
+        <details id="fb-config-details" style="border-top:1px solid var(--border-col);padding-top:8px;">
+          <summary style="font-size:0.78rem;font-weight:800;cursor:pointer;color:var(--accent);">
+            ⚙️ Firebase Realtime Database Config (Saved to Browser)
+          </summary>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+            <div>
+              <label style="font-size:0.72rem;font-weight:800;">apiKey:</label>
+              <input type="text" id="fb-cfg-apikey" placeholder="AIzaSy..." style="width:100%;font-size:0.78rem;font-family:var(--font-mono);" />
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:800;">databaseURL:</label>
+              <input type="text" id="fb-cfg-dburl" placeholder="https://your-project-default-rtdb.firebaseio.com" style="width:100%;font-size:0.78rem;font-family:var(--font-mono);" />
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:800;">projectId:</label>
+              <input type="text" id="fb-cfg-projectid" placeholder="your-project-id" style="width:100%;font-size:0.78rem;font-family:var(--font-mono);" />
+            </div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button class="btn btn-primary" style="flex:1;" onclick="saveAndConnectFirebaseConfig()">💾 Save &amp; Connect Firebase</button>
+              <button class="btn" onclick="clearFirebaseConfig()">🧹 Clear</button>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   </div>
@@ -2084,6 +2103,18 @@ table.sp-table th {
      APPLICATION JAVASCRIPT ENGINE
      ============================================================================ -->
 <script>
+/* ----------------------------------------------------------------------------
+   0. FIREBASE REALTIME DATABASE DEFAULT CONFIG (Optional: paste before hosting)
+   ---------------------------------------------------------------------------- */
+const FIREBASE_DEFAULT_CONFIG = {
+  apiKey: "AIzaSyDuZ87TSOdamgWr6ZJ-_ovtlbZLdeI8rBg",
+  authDomain: "home-scorecard.firebaseapp.com",
+  databaseURL: "https://home-scorecard-default-rtdb.firebaseio.com",
+  projectId: "home-scorecard",
+  storageBucket: "home-scorecard.firebasestorage.app",
+  messagingSenderId: "283370659278",
+  appId: "1:283370659278:web:8603f3f8320703f0b6df9f"
+};
 /* ----------------------------------------------------------------------------
    1. THEME CATALOG & SPORT METADATA
    ---------------------------------------------------------------------------- */
@@ -2197,7 +2228,6 @@ const APP = {
   activeSport: 'cricket',
   colorMode: 'light',
   audienceMode: false,
-  stadiumHdmiMode: false,
   selectedThemeBySport: {
     cricket: 'wc23',
     badminton: 'bad_allengland',
@@ -2581,6 +2611,10 @@ function toggleColorMode() {
 }
 
 function toggleAudienceMode() {
+  if (typeof FB_SYNC !== 'undefined' && FB_SYNC.audienceLocked) {
+    showToast('Locked in Live Audience View');
+    return;
+  }
   APP.audienceMode = !APP.audienceMode;
   document.body.classList.toggle('audience-mode', APP.audienceMode);
   const lbl = document.getElementById('mode-switch-label');
@@ -2593,30 +2627,6 @@ function toggleAudienceMode() {
   showToast(APP.audienceMode ? 'Audience Broadcast View (Controls Hidden)' : 'Scorer Console View');
 }
 
-function toggleStadiumHdmiMode(enable) {
-  APP.stadiumHdmiMode = enable;
-  if (enable) {
-    APP.audienceMode = true;
-    document.body.classList.add('audience-mode', 'stadium-hdmi-mode');
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-    showToast('Stadium HDMI View Active (Press Esc or top-right button to exit)');
-  } else {
-    document.body.classList.remove('stadium-hdmi-mode');
-    if (document.fullscreenElement && document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
-    }
-    showToast('Exited Stadium HDMI View');
-  }
-  renderAll();
-}
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && APP.stadiumHdmiMode) {
-    toggleStadiumHdmiMode(false);
-  }
-});
 
 function toggleQuickToolsFab(forceState) {
   const menu = document.getElementById('quick-tools-menu');
@@ -5244,7 +5254,7 @@ function renderBottomBroadcastBar() {
 function openModal(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('open');
-  if (id === 'cast-modal') generateEncryptedBroadcastLink();
+  if (id === 'cast-modal') { populateFirebaseConfigInputs(); refreshBroadcastAudienceLink(); }
 }
 
 function closeModal(id) {
@@ -5805,79 +5815,362 @@ function triggerGlobalUndo() {
   else showToast('Turn adjusted via table seating');
 }
 
-/* CHROMECAST & AES-256-GCM ENCRYPTED LINK */
-function startChromecastSession() {
-  if (navigator.presentation && navigator.presentation.defaultRequest) {
-    navigator.presentation.defaultRequest.start().then(() => {
-      showToast('Chromecast Receiver Connected!');
-    }).catch(() => {
-      showToast('Opened Broadcast Receiver Window');
-      window.open(window.location.href + '#audience=1', '_blank', 'width=1280,height=720');
-    });
-  } else {
-    showToast('Launched Clean Broadcast Receiver Window');
-    toggleAudienceMode();
+const FB_CFG_STORAGE_KEY = 'home_scorecard_fb_cfg';
+const FB_SYNC = {
+  app: null,
+  db: null,
+  dbMod: null,
+  connected: false,
+  publishing: false,
+  encrypt: true,
+  audienceLocked: false,
+  roomPin: '482910',
+  publishTimer: null,
+  unsubscribe: null
+};
+
+function getSavedFirebaseConfig() {
+  try {
+    const raw = localStorage.getItem(FB_CFG_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.apiKey && parsed.databaseURL && parsed.projectId) return parsed;
+    }
+  } catch (_) {}
+  if (FIREBASE_DEFAULT_CONFIG.apiKey && FIREBASE_DEFAULT_CONFIG.databaseURL && FIREBASE_DEFAULT_CONFIG.projectId) {
+    return { ...FIREBASE_DEFAULT_CONFIG };
+  }
+  return null;
+}
+
+function populateFirebaseConfigInputs() {
+  const cfg = getSavedFirebaseConfig() || { apiKey: '', databaseURL: '', projectId: '' };
+  const k = document.getElementById('fb-cfg-apikey');
+  const d = document.getElementById('fb-cfg-dburl');
+  const p = document.getElementById('fb-cfg-projectid');
+  if (k) k.value = cfg.apiKey || '';
+  if (d) d.value = cfg.databaseURL || '';
+  if (p) p.value = cfg.projectId || '';
+  const baseInp = document.getElementById('fb-base-url-input');
+  if (baseInp) {
+    try { baseInp.value = localStorage.getItem(FB_BASE_URL_KEY) || ''; } catch (_) {}
+  }
+  updateFirebaseStatusUi();
+}
+
+function updateFirebaseStatusUi(customMsg) {
+  const badge = document.getElementById('fb-conn-badge');
+  const pubBtn = document.getElementById('fb-publish-btn');
+  const stLine = document.getElementById('e2ee-status-line');
+  if (badge) {
+    badge.textContent = FB_SYNC.connected
+      ? (FB_SYNC.publishing ? '🔴 Live Publishing' : '🟢 Firebase Connected')
+      : '⚪ Not Connected';
+  }
+  if (pubBtn) {
+    pubBtn.textContent = FB_SYNC.publishing ? '⏹️ Stop Live Sync' : '🔴 Start Live Sync';
+  }
+  if (stLine && customMsg) {
+    stLine.textContent = customMsg;
   }
 }
 
-async function generateEncryptedBroadcastLink() {
-  const pin = (document.getElementById('e2ee-room-pin').value || '482910').trim();
-  const snapshot = JSON.stringify({
-    sport: APP.activeSport,
-    theme: APP.selectedThemeBySport[APP.activeSport],
-    colorMode: APP.colorMode,
-    score: `${APP.cricket.teamA} ${APP.cricket.runs}/${APP.cricket.wickets}`
-  });
-
-  let cipherB64 = btoa(unescape(encodeURIComponent(snapshot)));
+async function initFirebaseDatabase() {
+  if (FB_SYNC.connected && FB_SYNC.db && FB_SYNC.dbMod) return true;
+  const cfg = getSavedFirebaseConfig();
+  if (!cfg) {
+    updateFirebaseStatusUi('Paste your Firebase apiKey, databaseURL, and projectId below to enable live sync.');
+    return false;
+  }
   try {
-    if (window.crypto && window.crypto.subtle) {
-      const enc = new TextEncoder();
-      const keyMat = await window.crypto.subtle.importKey('raw', enc.encode(pin.padEnd(16, '0')), 'PBKDF2', false, ['deriveKey']);
-      const iv = window.crypto.getRandomValues(new Uint8Array(12));
-      const key = await window.crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt: enc.encode('HomeScorecardSalt'), iterations: 100000, hash: 'SHA-256' },
-        keyMat,
-        { name: 'AES-GCM', length: 256 },
-        false,
-        ['encrypt']
-      );
-      const ct = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(snapshot));
-      const combined = new Uint8Array(iv.byteLength + ct.byteLength);
-      combined.set(iv, 0);
-      combined.set(new Uint8Array(ct), iv.byteLength);
-      cipherB64 = btoa(String.fromCharCode(...combined));
-    }
-  } catch (_) {}
+    updateFirebaseStatusUi('Connecting to Firebase Realtime Database...');
+    const [appMod, dbMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')
+    ]);
+    const existing = appMod.getApps();
+    const fbApp = existing.length ? existing[0] : appMod.initializeApp(cfg);
+    FB_SYNC.app = fbApp;
+    FB_SYNC.db = dbMod.getDatabase(fbApp);
+    FB_SYNC.dbMod = dbMod;
+    FB_SYNC.connected = true;
+    updateFirebaseStatusUi(`Connected to ${cfg.projectId} • Ready to sync rooms/${FB_SYNC.roomPin}`);
+    return true;
+  } catch (err) {
+    FB_SYNC.connected = false;
+    updateFirebaseStatusUi(`Firebase connection failed: ${err && err.message ? err.message : 'Check config & network'}`);
+    return false;
+  }
+}
 
-  const link = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(pin)}#e2ee=${encodeURIComponent(cipherB64.slice(0, 64))}`;
+async function saveAndConnectFirebaseConfig() {
+  const apiKey = (document.getElementById('fb-cfg-apikey')?.value || '').trim();
+  const databaseURL = (document.getElementById('fb-cfg-dburl')?.value || '').trim();
+  const projectId = (document.getElementById('fb-cfg-projectid')?.value || '').trim();
+  if (!apiKey || !databaseURL || !projectId) {
+    showToast('Please enter apiKey, databaseURL, and projectId');
+    return;
+  }
+  try {
+    localStorage.setItem(FB_CFG_STORAGE_KEY, JSON.stringify({ apiKey, databaseURL, projectId }));
+  } catch (_) {}
+  FB_SYNC.connected = false;
+  FB_SYNC.db = null;
+  const ok = await initFirebaseDatabase();
+  if (ok) {
+    showToast('Firebase connected & saved!');
+    if (!FB_SYNC.audienceLocked) {
+      FB_SYNC.publishing = true;
+      updateFirebaseStatusUi(`Live publishing active on rooms/${FB_SYNC.roomPin}`);
+      pushStateToFirebaseNow();
+    }
+  }
+}
+
+function clearFirebaseConfig() {
+  try { localStorage.removeItem(FB_CFG_STORAGE_KEY); } catch (_) {}
+  FB_SYNC.connected = false;
+  FB_SYNC.publishing = false;
+  FB_SYNC.db = null;
+  populateFirebaseConfigInputs();
+  updateFirebaseStatusUi('Firebase config cleared.');
+  showToast('Cleared Firebase config');
+}
+
+const FB_BASE_URL_KEY = 'home_scorecard_base_url';
+
+function saveBaseUrlOverride(val) {
+  const cleaned = (val || '').trim();
+  try {
+    if (cleaned) localStorage.setItem(FB_BASE_URL_KEY, cleaned);
+    else localStorage.removeItem(FB_BASE_URL_KEY);
+  } catch (_) {}
+  refreshBroadcastAudienceLink();
+}
+
+function getAudienceRoomUrl() {
+  const pinEl = document.getElementById('e2ee-room-pin');
+  const pin = ((pinEl && pinEl.value) || FB_SYNC.roomPin || '482910').trim().replace(/[^a-zA-Z0-9_-]/g, '') || '482910';
+  FB_SYNC.roomPin = pin;
+
+  let customBase = (document.getElementById('fb-base-url-input')?.value || '').trim();
+  if (!customBase) {
+    try { customBase = (localStorage.getItem(FB_BASE_URL_KEY) || '').trim(); } catch (_) {}
+  }
+
+  const rawSource = customBase || window.location.href;
+  try {
+    const u = new URL(rawSource);
+    u.search = '';
+    u.hash = '';
+    u.searchParams.set('room', pin);
+    u.searchParams.set('mode', 'audience');
+    return u.toString();
+  } catch (_) {
+    const cleanFallback = rawSource.split('?')[0].split('#')[0];
+    return `${cleanFallback}?room=${encodeURIComponent(pin)}&mode=audience`;
+  }
+}
+
+function refreshBroadcastAudienceLink() {
+  const link = getAudienceRoomUrl();
   const out = document.getElementById('e2ee-link-output');
   if (out) out.value = link;
-  const stLine = document.getElementById('e2ee-status-line');
-  if (stLine) stLine.textContent = `AES-256-GCM Encrypted with Room PIN ${pin}`;
+}
 
-  // Render deterministic QR matrix SVG
-  const qrBox = document.getElementById('e2ee-qr-svg-box');
-  if (qrBox) {
-    let cells = '';
-    for (let r = 0; r < 11; r++) {
-      for (let c = 0; c < 11; c++) {
-        const isFinder = (r < 3 && c < 3) || (r < 3 && c > 7) || (r > 7 && c < 3);
-        const bit = isFinder || ((cipherB64.charCodeAt((r * 11 + c) % cipherB64.length) + r * c) % 2 === 0);
-        if (bit) cells += `<rect x="${c * 7 + 4}" y="${r * 7 + 4}" width="6" height="6" fill="#111827"/>`;
-      }
-    }
-    qrBox.innerHTML = `<svg viewBox="0 0 85 85" style="width:100%;height:100%;">${cells}</svg>`;
+function randomizeRoomPin() {
+  const pin = String(Math.floor(100000 + Math.random() * 900000));
+  const pinEl = document.getElementById('e2ee-room-pin');
+  if (pinEl) pinEl.value = pin;
+  FB_SYNC.roomPin = pin;
+  refreshBroadcastAudienceLink();
+  if (FB_SYNC.publishing) pushStateToFirebaseNow();
+  showToast(`Room PIN updated to ${pin}`);
+}
+
+function toggleFirebaseEncryption(enabled) {
+  FB_SYNC.encrypt = !!enabled;
+  if (FB_SYNC.publishing) pushStateToFirebaseNow();
+  showToast(enabled ? 'AES-256-GCM Room Encryption Enabled' : 'Plain JSON Sync Enabled');
+}
+
+async function toggleFirebaseLivePublish() {
+  if (FB_SYNC.publishing) {
+    FB_SYNC.publishing = false;
+    updateFirebaseStatusUi('Live publishing paused.');
+    showToast('Stopped Live Broadcast Sync');
+    return;
   }
+  refreshBroadcastAudienceLink();
+  const ok = await initFirebaseDatabase();
+  if (!ok) {
+    const det = document.getElementById('fb-config-details');
+    if (det) det.open = true;
+    showToast('Enter Firebase config below to start live sync');
+    return;
+  }
+  FB_SYNC.publishing = true;
+  updateFirebaseStatusUi(`🔴 Live publishing to rooms/${FB_SYNC.roomPin} (${FB_SYNC.encrypt ? 'AES-256-GCM' : 'Plain'})`);
+  await pushStateToFirebaseNow();
+  showToast(`Live Sync ON for Room ${FB_SYNC.roomPin}`);
 }
 
 function copyEncryptedBroadcastLink() {
+  refreshBroadcastAudienceLink();
   const out = document.getElementById('e2ee-link-output');
   if (!out) return;
   if (navigator.clipboard) {
     navigator.clipboard.writeText(out.value).catch(() => {});
   }
-  showToast('Copied Encrypted Broadcast Link!');
+  showToast('Copied Live Audience Link!');
+}
+
+function shareLiveLinkOnWhatsApp() {
+  const link = getAudienceRoomUrl();
+  let summary = 'Live Scoreboard';
+  if (APP.activeSport === 'cricket') {
+    const c = APP.cricket;
+    const ovStr = `${Math.floor(c.balls / 6)}.${c.balls % 6}`;
+    summary = `🏏 ${c.teamA} ${c.runs}/${c.wickets} (${ovStr} ov) vs ${c.teamB}`;
+  } else if (['badminton', 'tennis', 'tabletennis'].includes(APP.activeSport)) {
+    const st = APP.courts[APP.activeSport];
+    summary = `Live ${APP.activeSport.toUpperCase()}: ${st.sideA} vs ${st.sideB}`;
+  } else {
+    summary = `Live ${APP.activeSport.toUpperCase()} Table`;
+  }
+  const msg = `${summary} — Follow live on Home Scorecard (Room ${FB_SYNC.roomPin}): ${link}`;
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  showToast('Opening WhatsApp Share...');
+}
+
+/* WebCrypto AES-256-GCM Helpers (PBKDF2-SHA256 derived from Room PIN) */
+async function deriveRoomAesKey(pin, usage) {
+  const enc = new TextEncoder();
+  const keyMat = await window.crypto.subtle.importKey('raw', enc.encode(String(pin).padEnd(16, '0')), 'PBKDF2', false, ['deriveKey']);
+  return window.crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode('HomeScorecardSalt'), iterations: 100000, hash: 'SHA-256' },
+    keyMat,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    usage
+  );
+}
+
+async function encryptBroadcastState(stateObj, pin) {
+  const jsonStr = JSON.stringify(stateObj);
+  const enc = new TextEncoder();
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveRoomAesKey(pin, ['encrypt']);
+  const ctBuf = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(jsonStr));
+  const bytes = new Uint8Array(ctBuf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  let ivBin = '';
+  for (let i = 0; i < iv.length; i++) ivBin += String.fromCharCode(iv[i]);
+  return { encrypted: true, iv: btoa(ivBin), ct: btoa(bin), updatedAt: Date.now() };
+}
+
+async function decryptBroadcastState(payload, pin) {
+  if (!payload || !payload.encrypted) return payload ? payload.state : null;
+  const ivBin = atob(payload.iv);
+  const iv = new Uint8Array(ivBin.length);
+  for (let i = 0; i < ivBin.length; i++) iv[i] = ivBin.charCodeAt(i);
+  const ctBin = atob(payload.ct);
+  const ct = new Uint8Array(ctBin.length);
+  for (let i = 0; i < ctBin.length; i++) ct[i] = ctBin.charCodeAt(i);
+  const key = await deriveRoomAesKey(pin, ['decrypt']);
+  const plainBuf = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  return JSON.parse(new TextDecoder().decode(plainBuf));
+}
+
+function buildSyncStatePayload() {
+  const crkCopy = { ...APP.cricket, undoStack: [] };
+  const courtsCopy = {};
+  Object.keys(APP.courts).forEach(k => {
+    courtsCopy[k] = { ...APP.courts[k], undoStack: [] };
+  });
+  return {
+    activeSport: APP.activeSport,
+    colorMode: APP.colorMode,
+    selectedThemeBySport: APP.selectedThemeBySport,
+    commentaryEnabled: APP.commentaryEnabled,
+    cricket: crkCopy,
+    courts: courtsCopy,
+    cards: APP.cards
+  };
+}
+
+function scheduleFirebasePublish() {
+  if (!FB_SYNC.publishing || !FB_SYNC.connected || FB_SYNC.audienceLocked) return;
+  clearTimeout(FB_SYNC.publishTimer);
+  FB_SYNC.publishTimer = setTimeout(() => { pushStateToFirebaseNow(); }, 220);
+}
+
+async function pushStateToFirebaseNow() {
+  if (!FB_SYNC.publishing || !FB_SYNC.connected || !FB_SYNC.db || !FB_SYNC.dbMod || FB_SYNC.audienceLocked) return;
+  try {
+    const stateObj = buildSyncStatePayload();
+    const roomRef = FB_SYNC.dbMod.ref(FB_SYNC.db, `rooms/${FB_SYNC.roomPin}`);
+    let record;
+    if (FB_SYNC.encrypt && window.crypto && window.crypto.subtle) {
+      record = await encryptBroadcastState(stateObj, FB_SYNC.roomPin);
+    } else {
+      record = { encrypted: false, state: stateObj, updatedAt: Date.now() };
+    }
+    await FB_SYNC.dbMod.set(roomRef, record);
+    updateFirebaseStatusUi(`🟢 Synced rooms/${FB_SYNC.roomPin} at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`);
+  } catch (err) {
+    updateFirebaseStatusUi(`⚠️ Sync push error: ${err && err.message ? err.message : 'Check DB rules'}`);
+  }
+}
+
+async function startAudienceRoomSubscription(pin) {
+  FB_SYNC.audienceLocked = true;
+  FB_SYNC.roomPin = pin;
+  APP.audienceMode = true;
+  document.body.classList.add('audience-mode', 'audience-locked');
+  const badge = document.getElementById('audience-live-room-badge');
+  if (badge) badge.textContent = `🔴 CONNECTING • ${pin}`;
+
+  const ok = await initFirebaseDatabase();
+  if (!ok) {
+    if (badge) badge.textContent = `⚠️ ROOM ${pin} (CONFIG NEEDED)`;
+    showToast('Audience mode locked — configure Firebase in Menu → Live Broadcast to connect');
+    return;
+  }
+
+  const roomRef = FB_SYNC.dbMod.ref(FB_SYNC.db, `rooms/${pin}`);
+  FB_SYNC.unsubscribe = FB_SYNC.dbMod.onValue(roomRef, async (snapshot) => {
+    const val = snapshot.val();
+    if (!val) {
+      if (badge) badge.textContent = `🟡 WAITING • ROOM ${pin}`;
+      return;
+    }
+    try {
+      const incoming = await decryptBroadcastState(val, pin);
+      if (!incoming) return;
+      if (incoming.selectedThemeBySport) Object.assign(APP.selectedThemeBySport, incoming.selectedThemeBySport);
+      if (incoming.commentaryEnabled) Object.assign(APP.commentaryEnabled, incoming.commentaryEnabled);
+      if (incoming.colorMode) APP.colorMode = incoming.colorMode;
+      if (incoming.cricket) Object.assign(APP.cricket, incoming.cricket);
+      if (incoming.courts) {
+        Object.keys(incoming.courts).forEach(k => {
+          if (APP.courts[k]) Object.assign(APP.courts[k], incoming.courts[k]);
+        });
+      }
+      if (incoming.cards) Object.assign(APP.cards, incoming.cards);
+      if (incoming.activeSport && incoming.activeSport !== APP.activeSport) {
+        selectSport(incoming.activeSport);
+      } else {
+        applyAllVisualAttributes();
+        renderAll();
+      }
+      if (badge) badge.textContent = `🔴 LIVE • ROOM ${pin}`;
+    } catch (_) {
+      if (badge) badge.textContent = `🔐 PIN MISMATCH • ${pin}`;
+    }
+  });
 }
 
 /* STANDALONE HTML EXPORT (For running outside Gemini Canvas in any browser or NAS!) */
@@ -5940,6 +6233,7 @@ function renderAll() {
   renderHistory();
   renderBottomBroadcastBar();
   updateDockMetrics();
+  scheduleFirebasePublish();
 }
 
 /* MULTI-LAYER PERSISTENCE (Survives Foldable Unfold / WebView Reload / Orientation Change) */
@@ -6070,14 +6364,21 @@ window.addEventListener('DOMContentLoaded', () => {
     const dock = document.getElementById('bottom-broadcast-dock');
     if (dock) new ResizeObserver(updateDockMetrics).observe(dock);
   }
+  // Audience Startup Lock: check ?room=<PIN>&mode=audience
+  const params = new URLSearchParams(window.location.search);
+  const urlRoom = (params.get('room') || '').trim();
+  const urlMode = (params.get('mode') || '').trim().toLowerCase();
+  if (urlRoom && urlMode === 'audience') {
+    startAudienceRoomSubscription(urlRoom);
+  }
 });
 </script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('Home Scorecard PWA ready'))
-        .catch((err) => console.error('SW registration failed:', err));
+      navigator.serviceWorker.register('./sw.js').catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
     });
   }
 </script>
